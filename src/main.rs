@@ -66,7 +66,7 @@ fn main() {
         exit(1);
     };
 
-    match Command::new(program).args(args).status() {
+    let exit_code = match Command::new(program).args(args).status() {
         Ok(exit_status) => match exit_status.code() {
             Some(code) => {
                 #[cfg(windows)]
@@ -79,13 +79,15 @@ fn main() {
                 }
 
                 if expect_crash || code == 0 {
-                    exit(1)
+                    1
                 } else {
-                    exit(0)
+                    0
                 }
             }
             None => print_error_and_exit(signal_error(exit_status)),
         },
         Err(error) => print_error_and_exit(error),
     };
+
+    exit(exit_code)
 }
