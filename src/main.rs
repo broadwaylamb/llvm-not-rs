@@ -30,19 +30,19 @@ fn signal_error(_status: ExitStatus) -> io::Error {
 fn main() {
     let mut args = env::args();
     args.next();
-    let expect_crash = match args.next() {
+    let (expect_crash, program) = match args.next() {
         Some(arg) if arg == "--crash" => {
             // Crash is expected, so disable crash report and symbolization to reduce
             // output and avoid potentially slow symbolization.
             env::set_var("LLVM_DISABLE_CRASH_REPORT", "1");
             env::set_var("LLVM_DISABLE_SYMBOLIZATION", "1");
-            true
+            (true, None)
         }
-        Some(_) => false,
+        Some(program) => (false, Some(program)),
         None => exit(1),
     };
 
-    let program = match args.next() {
+    let program = match program.or_else(|| args.next()) {
         Some(program_name) => match find_program_by_name(&program_name) {
             Ok(program) => program,
             Err(error) => {
